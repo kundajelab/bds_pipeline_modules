@@ -1,0 +1,6 @@
+{
+  "name": "Genomic pipelines in Kundaje lab",
+  "tagline": "BigDataScript (BDS) pipelines and modules",
+  "body": "BigDataScript (BDS) pipelines and modules\r\n============\r\n\r\n# BDS pipelines in Kundaje lab\r\n\r\n* [AQUAS TF/Histone ChIP-Seq pipeline](https://github.com/kundajelab/TF_chipseq_pipeline)\r\n* [ATAC-Seq/DNase-Seq pipeline](https://github.com/kundajelab/bds_atac)\r\n\r\n# Discussion channel for genomic pipelines in Kundaje lab\r\n\r\n[Discussion channel](https://groups.google.com/forum/#!forum/klab_genomic_pipelines_discuss)\r\n\r\n# Programming guideline for BDS pipelines\r\n\r\n[Programming guideline](README_CODE.md)\r\n\r\n# Running BDS pipelines\r\n\r\n[Usage](README_PIPELINE.md)\r\n",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
