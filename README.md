@@ -8,12 +8,12 @@ BigDataScript (BDS) pipelines and modules
 
 # Discussion channel for genomic pipelines in Kundaje lab
 
-[Discussion channel](https://groups.google.com/forum/#!forum/klab_genomic_pipelines_discuss)
+* [Discussion channel](https://groups.google.com/forum/#!forum/klab_genomic_pipelines_discuss)
 
 # Programming guideline for BDS pipelines
 
-[Programming guideline](README_CODE.md)
+* [Programming guideline](README_CODE.md)
 
 # Running BDS pipelines
 
-[Usage](README_PIPELINE.md)
+* [Usage](README_PIPELINE.md)
