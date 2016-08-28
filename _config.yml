@@ -1,13 +1,13 @@
 # Setup
 title:        Genomic pipelines in Kundaje lab
 tagline:      BigDataScript pipelines, libraries and programming guideline
-Baseurl:      "."
+baseurl:      ""
 paginate:     1
 
 # About/contact
 author:
   name:       Jin Lee and Anshul Kundaje
-  url:        http://yourhomepage.com 
+  url:        https://sites.google.com/site/anshulkundaje/Home
 
 # Gems
 gems:
