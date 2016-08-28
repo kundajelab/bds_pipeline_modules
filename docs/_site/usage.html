@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  
+  <head>
+  <meta charset="UTF-8">
+  <title>Genomic pipelines in Kundaje lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#157878">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="/css/cayman.css">
+</head>
+
+  <body>
+    <section class="page-header">
+  <h1 class="project-name">Genomic pipelines in Kundaje lab</h1>
+  <h2 class="project-tagline">BigDataScript pipelines, libraries and programming guideline</h2>
+  <a href="./index.html" class="btn">Overview</a>
+  <a href="./usage.html" class="btn">Usage</a>
+  <a href="./programming.html" class="btn">Programming</a>
+  <a href="./troubleshooting.html" class="btn">Troubleshooting</a>
+  <a href="./links.html" class="btn">Links</a>
+</section>
+
+
+    <section class="main-content">
+      
+      <h2>Managing multiple pipelines</h2>
+
+<p><code>./utils/bds_scr</code> is a BASH script to create a detached screen for a BDS script and redirect stdout/stderr to a log file <code>[LOG_FILE_NAME]</code>. If a log file already exists, stdout/stderr will be appended to it. Monitor a pipeline with <code>tail -f [LOG_FILE_NAME]</code>.</p>
+
+<p>The only difference between <code>bds_scr</code> and <code>bds</code> is that you have <code>[SCR_NAME] [LOG_FILE_NAME]</code> between <code>bds</code> command and its parameters (or a BDS script name).
+You can skip <code>[LOG_FILE_NAME]</code> then a log file <code>[SCR_NAME].log</code> will be generated on the working directory.
+You can also add any BDS parameters (like <code>-dryRun</code>, <code>-d</code> and <code>-s</code>). The following example is for running a pipeline on Sun Grid Engine.
+Use <code>bds_scr_5min</code> instead of <code>bds_scr</code> to prevent from running multiple pipelines on the same data set and output directory. <code>bds_scr_5min</code> does not start a screen if the last modified time of a log file is fresh (5 minutes).</p>
+<div class="highlight"><pre><code class="language-" data-lang="">$ bds_scr [SCR_NAME] [LOG_FILE_NAME] [PIPELINE.BDS] ...
+$ bds_scr [SCR_NAME] [PIPELINE.BDS] ...
+$ bds_scr [SCR_NAME] [LOG_FILE_NAME] -s sge [PIPELINE.BDS] ...
+$ bds_scr_5min [SCR_NAME] [PIPELINE.BDS] ...
+</code></pre></div>
+<p>Once the pipeline run is done, the screen will be automatically closed. To kill a pipeline manually while it&#39;s running:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">$ kill_scr [SCR_NAME]
+$ screen -X -S [SCR_NAME] quit
+</code></pre></div>
+<h2>Specifying a cluster engine</h2>
+
+<p>You can run BDS pipeline with a specified cluster engine. Choose your cluster system (<code>local</code>: UNIX threads, <code>sge</code>: Sun Grid Engine, <code>slurm</code>: SLURM ...).</p>
+<div class="highlight"><pre><code class="language-" data-lang="">$ bds -s [SYSTEM] [PIPELINE.BDS] ...
+</code></pre></div>
+<p>Modify <code>$HOME/.bds/bds.config</code> or <code>./default.env</code> to change your default system. The following example is to use Sun Grid Engine (sge) as your default system. Then you no longer need to add <code>-s sge</code> to the command line.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">#system = local
+system = sge
+#system = slurm
+</code></pre></div>
+<p>You need additional modification on <code>bds.config</code> to correctly configure your cluster engine. Read more at <a href="http://pcingola.github.io/BigDataScript/bigDataScript_manual.html">here</a>.</p>
+
+<p>For Kundaje lab clusters, SCG and Sherlock clusters, it&#39;s already set up for Sun Grid Engine and SLURM. SLURM is implemented with using a generic cluster (<code>system = generic</code>) for AQUAS pipeline modules.</p>
+
+<h2>Resource settings</h2>
+
+<p>Most clusters have resource limitation so that jobs submitted without it will be declined. By default, walltime is 23 hours and max memory is 12GB. To change them, add the following parameters to the command line. <code>-mem</code> does not apply to jobs with their own max. memory parameters (eg. <code>-mem_spp</code> for spp, <code>-mem_bwa</code> for bwa, ...)</p>
+<div class="highlight"><pre><code class="language-" data-lang="">-wt [WALLTIME; examples: 5:50:00, 10h20m, 7200] -memory [MAX_MEMORY; examples: 5G, 2000K]
+</code></pre></div>
+<p>You can specify walltime and max. memory for a specific job (with <code>-mem_[APP_NAME] [MAX_MEM]</code>). To see which job has specific resource settings, run the pipeline without parameters <code>$ bds [PIPELINE_BDS]</code> then it will display all parameters including resource settings and help. The following line is an example parameter to increase walltime and max. memory for MACS2 peak calling.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">-wt_macs2 10h30m -mem_macs2 15G
+</code></pre></div>
+<p>Note that max. memory defined with <code>-mem_XXX</code> is NOT PER CPU! If your system (either local or cluster engine) doesn&#39;t limit walltime and max. memory for jobs, add the following to the command line. Pipeline jobs will run without resource restriction.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">-unlimited_mem_wt
+</code></pre></div>
+<h2>Debugging BDS pipelines</h2>
+
+<ol>
+<li><p>Take a look at HTML report (which contains all STDERR/STDOUT for all jobs in the pipeline; ).  It tells you everything about all pipeline jobs. Find which stage is errorneous. Carefully look at system messages (STDERR and STDOUT) for it. BDS HTML report is located at the working folder with name <code>[PIPELINE_NAME]_[TIMESTAMP]_report.html</code>. This report is automatically generated by BDS.</p></li>
+<li><p>Correct errors.</p></li>
+</ol>
+
+<p>2.1. Lack of memory: increase memory for all jobs (e.g. add <code>-mem 20G</code>) or a specific problematic job (e.g. add <code>-mem_macs2 20G</code>).</p>
+
+<p>2.2. Timeout: increase walltime for all jobs (e.g. add <code>-wt 24h</code>) or a specific long job (e.g. add <code>-wt_macs2 200h</code>). (Warning! Most clusters have limit for walltime. Make it as shortest as you can to get your queued jobs executed quickly.)</p>
+
+<p>2.3. Wrong input: check all input files are available.</p>
+
+<p>2.4. Software error: use recommended software versions.</p>
+
+<ol>
+<li>Resume pipeline with the same command line that you used for starting it. Previous successful stages will be automatically skipped.</li>
+</ol>
+<div class="highlight"><pre><code class="language-" data-lang=""># make BDS verbose
+$ bds -v [PIPELINE.BDS] ...
+
+# display debugging information
+$ bds -d [PIPELINE.BDS] ...
+
+# test run (this actually does nothing) to check input/output file names and commands
+$ bds -dryRun [PIPELINE.BDS] ...
+</code></pre></div>
+<h2>Species file</h2>
+
+<p>There are many species specific parameters like indices (bwa, bowtie, ...), chromosome sizes and sequence files (chr*.fa). If you have multiple pipelines, it&#39;s inconvenient to individually define all parameters in a command line argument for each pipeline run. However, if you have a species file with all species specific parameters defined, then you define less parameters in the command line and share the species file with all other pipelines.</p>
+
+<p>Add the following to the command line to specify species and species file.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">-species [SPECIES; hg19, mm9, ...] -species_file [SPECIES_FILE]
+</code></pre></div>
+<p>You can override any parameters defined in the species file by adding them to command line argument or configuration file. For example, if you want to override parameters for BWA index and umap:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">-species hg19 -species_file my_species.conf -bwa_idx [YOUR_OWN_BWA_IDX] -chrsz [YOUR_OWN_CHR_SIZES_FILE]
+</code></pre></div>
+<p>Example species file looks like the following. You can define your own species.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">[hg19]
+chrsz   = /mnt/data/annotations/by_release/hg19.GRCh37/hg19.chrom.sizes # chromosome sizes
+seq     = /mnt/data/ENCODE/sequence/encodeHg19Male          # genome reference sequence
+gensz   = hs                                # genome size: hs for humna, mm for mouse
+umap    = /mnt/data/ENCODE/umap/encodeHg19Male/globalmap_k1tok1000  # uniq. mappability tracks
+bwa_idx = /mnt/data/annotations/indexes/bwa_indexes/encodeHg19Male/v0.7.10/encodeHg19Male_bwa-0.7.10.fa
+blacklist = /mnt/data/ENCODE/blacklists/wgEncodeDacMapabilityConsensusExcludable.bed.gz
+
+# added for for atac-seq pipeline (bds_atac/atac.bds)
+bwt2_idx = /mnt/data/annotations/indexes/bowtie2_indexes/bowtie2/ENCODEHg19_male
+
+# added for ATAQC
+tss_enrich = /mnt/lab_data/kundaje/users/dskim89/ataqc/annotations/hg19/hg19_RefSeq_stranded.bed.gz
+ref_fa  = /mnt/lab_data/kundaje/users/dskim89/ataqc/annotations/hg19/encodeHg19Male.fa  // genome reference fasta
+dnase = /mnt/lab_data/kundaje/users/dskim89/ataqc/annotations/hg19/reg2map_honeybadger2_dnase_all_p10_ucsc.bed.gz
+prom = /mnt/lab_data/kundaje/users/dskim89/ataqc/annotations/hg19/reg2map_honeybadger2_dnase_prom_p2.bed.gz
+enh = /mnt/lab_data/kundaje/users/dskim89/ataqc/annotations/hg19/reg2map_honeybadger2_dnase_enh_p2.bed.gz
+reg2map = /mnt/lab_data/kundaje/users/dskim89/ataqc/annotations/hg19/dnase_avgs_reg2map_p10_merged_named.pvals.gz
+roadmap_meta = /mnt/lab_data/kundaje/users/dskim89/ataqc/annotations/hg19/eid_to_mnemonic.txt
+
+# your own definition for species
+
+[hg19_custom]
+chrsz   = ...
+seq     = ...
+...
+
+[mm9]
+...
+
+[mm10]
+...
+</code></pre></div>
+<p>Description for parameters in a species file.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">chrsz               : Chromosome sizes file path (use fetchChromSizes from UCSC tools).
+seq                 : Reference genome sequence directory path (where chr*.fa exist).
+gensz               : Genome size; hs for human, mm for mouse (default: hs).
+umap                : Unique mappability tracks directory path.
+bwa_idx             : BWA index (full path prefix of [].bwt file) .
+
+# for atac-seq pipeline (atac.bds)
+bwt2_idx            : Bowtie2 index (full path prefix of [].1.bt2 file).
+
+# for ATAQC
+tss_enrich          : TSS enrichment bed.
+ref_fa          : Reference genome sequence fasta.
+blacklist       : Blacklist bed for ataqc.
+dnase           : DNase bed for ataqc.
+prom            : Promoter bed for ataqc.
+enh             : Enhancer bed for ataqc.
+reg2map         : Reg2map for ataqc.
+roadmap_meta        : Roadmap metadata for ataqc.
+</code></pre></div>
+<p>Unique mappability tracks areavaiable <a href="https://sites.google.com/site/anshulkundaje/projects/mappability">here</a>. Blacklists are available <a href="https://sites.google.com/site/anshulkundaje/projects/blacklists">here</a>.</p>
+
+<h2>Sharing a species file</h2>
+<div class="highlight"><pre><code class="language-" data-lang="">$ bds [PIPELINE_BDS] -species [SPECIES; hg19, mm9, ...] -species_file [SPECIES_FILE]
+</code></pre></div>
+<p>If you want to skip <code>-species_file</code> parameter, define it in the default environment file <code>./default.env</code>.
+```
+[your_hostname] # get it with &#39;hostname -f&#39;</p>
+
+<p>conda<em>env     = [CONDA</em>ENV<em>NAME; bds</em>atac for atac, aquas<em>chipseq for chipseq]
+conda</em>env<em>py3 = [CONDA</em>ENV<em>PY3</em>NAME; bds<em>atac</em>py3 for atac, aquas<em>chipseq</em>py3 for chipseq]</p>
+
+<p>species<em>file = [SPECIES</em>FILE]
+```</p>
+
+<h2>Setting up shell environment</h2>
+
+<p><strong>Ignore this section</strong> if you have installed dependencies with <code>./install_dependencies.sh</code>.</p>
+
+<p>It is important to define enviroment variables (like <code>$PATH</code>) to make bioinformatics softwares in the pipeline work properly. mod, shcmd and addpath are three convenient ways to define environment variables. Environment variables defined with mod, shcmd and addpath are preloaded for all tasks on the pipeline. For example, if you define environment variables for bwa/0.7.3 with mod. bwa of version 0.7.3 will be used throughout the whole pipeline (including bwa aln, bwa same and bwa sampe).</p>
+
+<p>1) <code>mod</code></p>
+
+<p>There are different versions of bioinformatics softwares (eg. samtools, bedtools and bwa) and <a href="http://modules.sourceforge.net/">Enviroment Modules</a> is the best way to manage environemt variables for them. For example, if you want to add environment variables for bwa 0.7.3 by using Environment Modules. You can simply type <code>$ module add bwa/0.7.3;</code>. The equivalent setting in the pipeline configuration file should look like:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">   mod= bwa/0.7.3;
+</code></pre></div>
+<p>You can have multiple lines for mod since any suffix is allowed. Use <code></code> as a delimiter.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">   mod_bio= bwa/0.7.3 bedtools/2.x.x samtools/1.2
+   mod_lang= r/3.2.2 java/latest
+</code></pre></div>
+<p>2) <code>shcmd</code></p>
+
+<p>If you have softwares locally installed on your home, you may need to add to them environment variables like <code>$PATH</code>, <code>$LD_LIBRARY_PATH</code> and so on. <b>IMPORTANT!</b> Note that any pre-defined enviroment variables (like <code>$PATH</code>) should be referred in a curly bracket like <code>${PATH}</code>. This is because BDS distinguishes environment variables from BDS variables by a curly bracket ${}.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">   shcmd= export PATH=${PATH}:path_to_your_program
+</code></pre></div>
+<p>You can have multiple lines for shcmd since any suffix is allowed. Use ; as a delimiter. </p>
+<div class="highlight"><pre><code class="language-" data-lang="">   shcmd_R= export PATH=${PATH}:/home/userid/R-3.2.2;
+   shcmd_lib= export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${HOME}/R-3.2.2/lib
+</code></pre></div>
+<p>shcmd is not just for adding environemt variables. It can execute any bash shell commands prior to any jobs on the pipeline. For example, to give all jobs peaceful 10 seconds before running.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">   shcmd_SLEEP_TEN_SECS_FOR_ALL_JOBS= echo "I am sleeping..."; sleep 10
+</code></pre></div>
+<p>3) <code>addpath</code></p>
+
+<p>If you just want to add something to your <code>$PATH</code>, use addpath instead of shcmd. It&#39;s much simpler. Use : or ; as a delimiter.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">   addpath= ${HOME}/program1/bin:${HOME}/program1/bin:${HOME}/program2/bin:/usr/bin/test
+</code></pre></div>
+<p>4) <code>conda_env</code> and <code>conda_env_py3</code></p>
+
+<p>You can also use Anaconda virtual environment in the pipeline. BDS pipelines usually take two conda environments since there is a conflict between softwares based on python3 and python2. Make sure that the environment corresponding to <code>conda_env</code> has python2 installed and that corresponding to <code>conda_env_py3</code> has python3 installed.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">   conda_env= [CONDA_ENV_NAME]      # python2 must be installed in this virt. env.
+   conda_env_py3= [CONDA_ENV_NAME_FOR_PY3]  # python3 must be installed in this virt. env.
+</code></pre></div>
+<p><code>-mod</code>, <code>-shcmd</code> and <code>-addpath</code> are command line argument versions of <code>mod</code>, <code>shcmd</code> and <code>addpath</code>. However NO SUFFIX is allowed. For example,</p>
+<div class="highlight"><pre><code class="language-" data-lang="">$ bds [PIPELINE_BDS] -mod 'bwa/0.7.3; samtools/1.2' -shcmd 'export PATH=${PATH}:/home/userid/R-3.2.2' -addpath '${HOME}/program1/bin' -conda_env my_env -conda_env_py3 my_env_py3
+</code></pre></div>
+<h2>Environment file</h2>
+
+<p>It should be more convenient to have a separate file to define your own shell environments and cluster resources per hostname. You can also define any parameters (like bwa index, # thread for tasks, fastqs and so on) in the environment file. If an environment file is not specified <code>./default.env</code> will be used by default.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">$ bds [PIPELINE_BDS] ... -env [ENV_FILE]
+</code></pre></div>
+<p>Shell environment settings can be set up per HOSTNAME (<code>$ hostname -f</code>). This means that you can have multiple environment configruation for all clusters in one environment file. Single or multiple hostnames are written in a square bracket ([SECTION_NAME]). You can also use a group for hostnames. You can use a wild card (<strong>only one asterisk!</strong>) in hostnames. Example sturcture is like the following:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">[hostname1]
+... parameters ...
+
+[hostname2]
+... parameters ...
+
+[hostname3, hostname4]
+... parameters ...
+
+
+[hostname5 : group1]
+[hostname6, hostname7: group2]
+
+[group1]
+... parameters ...
+
+[group2]
+... parameters ...
+</code></pre></div>
+<p>Example environment file is like the following. Take a look at <code>./default.env</code>.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">[sherlock*.stanford.edu, sh-*.local]    # your hostname
+
+mod_any_suffix = bwa/0.7.3 samtools/1.2
+addpath_any_suffix = ${HOME}/program1/bin
+shcmd_any_suffix = export R_PATH=/home/userid/R-3.2.2
+
+species_file = /path/to/your/species.conf
+
+mem_spp = 4G
+wt_spp  = 10:00:00
+nice    = 19        # sub tasks will have low priority (nice==19).
+system  = slurm     # SLURM
+
+conda_env = my_conda_env_py2
+conda_env_py3 = my_conda_env_py3
+...
+
+[other_host_name_or_group]
+...
+
+</code></pre></div>
+<p>Parameters can be defined in 1) environment file, 2) configuation file and 3) command line arguments. They will be overriden in the order of 1) &lt; 2) &lt; 3).</p>
+
+<h2>Setting up Sun Grid Engine</h2>
+
+<p>Add the following to grid engine configuration.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">$ sudo qconf -mconf
+...
+execd_params                 ENABLE_ADDGRP_KILL=true
+...
+</code></pre></div>
+<p>Add a parallel environment <code>shm</code> to grid engine configuration. If you already have your own parallel environment, skip this.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">$ sudo qconf -ap
+
+pe_name            shm
+slots              999
+user_lists         NONE
+xuser_lists        NONE
+start_proc_args    /bin/true
+stop_proc_args     /bin/true
+allocation_rule    $pe_slots
+control_slaves     FALSE
+job_is_first_task  FALSE
+urgency_slots      min
+accounting_summary FALSE
+</code></pre></div>
+<p>Add your parallel environment (<code>shm</code> by default) to your queue and set your shell as bash.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">$ sudo qconf -mq [YOUR_MAIN_QUEUE]
+...
+pe_list               make [YOUR_PE_NAME]
+shell                 /bin/bash
+...
+</code></pre></div>
+<p>Correctly configure <code>./bds.config</code> and copy it to <code>$HOME/.bds/</code>:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">sge.pe = [YOUR_PE_NAME] # shm by default
+sge.mem = [MAX_MEMORY_TYPE] # h_vmem by default
+sge.timeout = [HARD_WALLTIME_TYPE] # h_rt by default
+sge.timeout2 = [SOFT_WALLTIME_TYPE] # s_rt by default
+</code></pre></div>
+<p>More information is at <a href="http://pcingola.github.io/BigDataScript/bigDataScript_manual.html%22%3Ehttp://pcingola.github.io/BigDataScript/bigDataScript_manual.html">here</a>.</p>
+
+<h2>BASH completion for UNIX screens</h2>
+
+<p>For automatic BASH completion for screens (http://www.commandlinefu.com/commands/view/12160/bash-auto-complete-your-screen-sessions), add the following to your <code>$HOME/.bashrc</code>:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">complete -C "perl -e '@w=split(/ /,\$ENV{COMP_LINE},-1);\$w=pop(@w);for(qx(screen -ls)){print qq/\$1\n/ if (/^\s*\$w/&amp;&amp;/(\d+\.\w+)/||/\d+\.(\$w\w*)/)}'" screen
+</code></pre></div>
+<h1>Contributors</h1>
+
+<ul>
+<li>Jin wook Lee - PhD Student, Mechanical Engineering Dept., Stanford University</li>
+<li>Anshul Kundaje - Assistant Professor, Dept. of Genetics, Stanford University</li>
+</ul>
+
+
+      <footer class="site-footer">
+  <span class="site-footer-owner"><a href="">Genomic pipelines in Kundaje lab</a> is maintained by <a href="http://yourhomepage.com">Jin Lee and Anshul Kundaje</a>.</span>
+  <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/pietromenna/jekyll-cayman-theme">Cayman theme</a> by <a href="http://github.com/jasonlong">Jason Long</a>.</span>
+</footer>
+
+
+    </section>
+
+  </body>
+</html>
