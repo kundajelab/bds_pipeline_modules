@@ -351,7 +351,3 @@ For automatic BASH completion for screens (http://www.commandlinefu.com/commands
 complete -C "perl -e '@w=split(/ /,\$ENV{COMP_LINE},-1);\$w=pop(@w);for(qx(screen -ls)){print qq/\$1\n/ if (/^\s*\$w/&&/(\d+\.\w+)/||/\d+\.(\$w\w*)/)}'" screen
 ```
 
-# Contributors
-
-* Jin wook Lee - PhD Student, Mechanical Engineering Dept., Stanford University
-* Anshul Kundaje - Assistant Professor, Dept. of Genetics, Stanford University

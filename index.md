@@ -12,3 +12,7 @@ title: {{ site.name }}
 
 * [Discussion channel](https://groups.google.com/forum/#!forum/klab_genomic_pipelines_discuss)
 
+### Contributors
+
+* Jin wook Lee - PhD Student, Mechanical Engineering Dept., Stanford University
+* Anshul Kundaje - Assistant Professor, Dept. of Genetics, Stanford University

@@ -146,7 +146,3 @@ Exception in thread "main" java.lang.NumberFormatException: For input string: "4
         at org.bds.Bds.main(Bds.java:182)
 ```
 
-# Contributors
-
-* Jin wook Lee - PhD Student, Mechanical Engineering Dept., Stanford University
-* Anshul Kundaje - Assistant Professor, Dept. of Genetics, Stanford University

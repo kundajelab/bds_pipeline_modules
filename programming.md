@@ -629,6 +629,6 @@ void callpeak_OKAY() {
 }
 ```
 
-### `goal` and `dep`
+### Buggy syntax
 
 `goal` and `dep` seem to be buggy (pipeline crashes) when combined with `par` prefix. Stay away from these syntax.
