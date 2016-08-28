@@ -1,6 +1,7 @@
-BigDataScript (BDS) pipelines using AQUAS pipeline modules
-==============
-
+---
+layout: default
+title: {{ site.name }}
+---
 
 ## Managing multiple pipelines
 
@@ -19,6 +20,7 @@ $ bds_scr_5min [SCR_NAME] [PIPELINE.BDS] ...
 ```
 
 Once the pipeline run is done, the screen will be automatically closed. To kill a pipeline manually while it's running:
+
 ```
 $ kill_scr [SCR_NAME]
 $ screen -X -S [SCR_NAME] quit
@@ -27,11 +29,13 @@ $ screen -X -S [SCR_NAME] quit
 ## Specifying a cluster engine
 
 You can run BDS pipeline with a specified cluster engine. Choose your cluster system (`local`: UNIX threads, `sge`: Sun Grid Engine, `slurm`: SLURM ...).
+
 ```
 $ bds -s [SYSTEM] [PIPELINE.BDS] ...
 ```
 
 Modify `$HOME/.bds/bds.config` or `./default.env` to change your default system. The following example is to use Sun Grid Engine (sge) as your default system. Then you no longer need to add `-s sge` to the command line.
+
 ```
 #system = local
 system = sge
@@ -45,14 +49,17 @@ For Kundaje lab clusters, SCG and Sherlock clusters, it's already set up for Sun
 ## Resource settings
 
 Most clusters have resource limitation so that jobs submitted without it will be declined. By default, walltime is 23 hours and max memory is 12GB. To change them, add the following parameters to the command line. `-mem` does not apply to jobs with their own max. memory parameters (eg. `-mem_spp` for spp, `-mem_bwa` for bwa, ...)
+
 ```
 -wt [WALLTIME; examples: 5:50:00, 10h20m, 7200] -memory [MAX_MEMORY; examples: 5G, 2000K]
 ```
 You can specify walltime and max. memory for a specific job (with `-mem_[APP_NAME] [MAX_MEM]`). To see which job has specific resource settings, run the pipeline without parameters `$ bds [PIPELINE_BDS]` then it will display all parameters including resource settings and help. The following line is an example parameter to increase walltime and max. memory for MACS2 peak calling.
+
 ```
 -wt_macs2 10h30m -mem_macs2 15G
 ```
 Note that max. memory defined with `-mem_XXX` is NOT PER CPU! If your system (either local or cluster engine) doesn't limit walltime and max. memory for jobs, add the following to the command line. Pipeline jobs will run without resource restriction.
+
 ```
 -unlimited_mem_wt
 ```
@@ -139,6 +146,7 @@ seq     = ...
 ```
 
 Description for parameters in a species file.
+
 ```
 chrsz               : Chromosome sizes file path (use fetchChromSizes from UCSC tools).
 seq                 : Reference genome sequence directory path (where chr*.fa exist).
@@ -259,6 +267,7 @@ Shell environment settings can be set up per HOSTNAME (`$ hostname -f`). This me
 ```
 
 Example environment file is like the following. Take a look at `./default.env`.
+
 ```
 [sherlock*.stanford.edu, sh-*.local] 	# your hostname
 
@@ -287,6 +296,7 @@ Parameters can be defined in 1) environment file, 2) configuation file and 3) co
 ## Setting up Sun Grid Engine
 
 Add the following to grid engine configuration.
+
 ```
 $ sudo qconf -mconf
 ...
@@ -295,6 +305,7 @@ execd_params                 ENABLE_ADDGRP_KILL=true
 ```
 
 Add a parallel environment `shm` to grid engine configuration. If you already have your own parallel environment, skip this.
+
 ```
 $ sudo qconf -ap
 
@@ -312,6 +323,7 @@ accounting_summary FALSE
 ```
 
 Add your parallel environment (`shm` by default) to your queue and set your shell as bash.
+
 ```
 $ sudo qconf -mq [YOUR_MAIN_QUEUE]
 ...
@@ -321,6 +333,7 @@ shell                 /bin/bash
 ```
 
 Correctly configure `./bds.config` and copy it to `$HOME/.bds/`:
+
 ```
 sge.pe = [YOUR_PE_NAME] # shm by default
 sge.mem = [MAX_MEMORY_TYPE] # h_vmem by default
@@ -333,153 +346,9 @@ More information is at [here](http://pcingola.github.io/BigDataScript/bigDataScr
 ## BASH completion for UNIX screens
 
 For automatic BASH completion for screens (http://www.commandlinefu.com/commands/view/12160/bash-auto-complete-your-screen-sessions), add the following to your `$HOME/.bashrc`:
+
 ```
 complete -C "perl -e '@w=split(/ /,\$ENV{COMP_LINE},-1);\$w=pop(@w);for(qx(screen -ls)){print qq/\$1\n/ if (/^\s*\$w/&&/(\d+\.\w+)/||/\d+\.(\$w\w*)/)}'" screen
-```
-
-## Troubleshooting
-
-### /bin/bash: module: line 1: syntax error: unexpected end of file
-
-If see the following error when you submit jobs to Sun Grid Enginee,
-```
-/bin/bash: module: line 1: syntax error: unexpected end of file
-```
-
-Check if your $HOME/.bashrc has any errorneous lines.
-
-Remove the following line in you module initialization scripts ($MODULESHOME/init/bash or /etc/profile.d/modules.sh).
-```
-export -f module
-```
-
-### Unable to run job: unknown resource "'mem"
-
-Replace `$HOME/.bds/bds.config` with the one in the repo.
-```
-$ cp /path/to/repo/bds.config $HOME/.bds/
-```
-
-### Unable to access jarfile /picard.jar
-
-Define a shell variable `PICARDROOT` for your environment. Add the following to your `~/.bashrc` or conda `activate`:
-```
-export PICARDROOT=/path/to/your/picard-tool
-```
-
-### awk: cmd. line:1: fatal: division by zero attempted
-
-This error happens when 1) picard tool's MarkDuplicate is running out of memory, 2) fastq inputs have wrong endedness (SE or PE) or 3) input raw bam is incorrect.
-For 1) balance memory usage among parallel tasks, add `-no_par` or reduce max. # threads (`-nth [SMALL_NUMBER]`).
-For 2) check your fastq inputs are correct (`-fastqN_1`, `-fastqN_2`, ...) and also check their endedness (SE or PE) parameters like (`-se` or `-pe`).
-For 3) check if there is an error in aligning stage (in an HTML report).
-
-
-### Unsupported major.minor version (java)
-
-When running bds (BigDataScript), you get the following error if you have lower version of java or high version of java is not selected as default.
-
-Solution:
-```
-# install latest version of java
-
-# for Fedora based linux (Red Hat, ...)
-$ sudo apt-get install openjdk-8-jre
-
-# fr Debian based linux (Ubuntu, ...)
-$ sudo yum install java-1.8.0-openjdk
-
-# choose the latest java as default
-$ sudo update-alternatives --config java
-```
-
-
-### [main_samview] random alignment retrieval only works for indexed BAM or CRAM files.
-
-If your pipeline starts from BAM files, make sure that bam index (.bam.bai) exists together with BAM file. If not, build index with `samtools index [YOUR_BAM_FILE]`. BAM and BAI should be in the same directory.
-
-
-### Fatal error: /home/leepc12/bds_atac/modules/report_*.bds
-
-Simply re-run the pipeline with the same command. Possible bug in BDS for locking/unlocking global variables.
-
-
-### ImportError: libopenblasp-r0-39a31c03.2.18.so: cannot open shared object file: No such file or directory
-
-Dependencies are not installed correctly. Check your Anaconda Python is correctly configured for conda environments. Run `./uninstall_dependencies.sh` and then `./install_dependencies.sh` again.
-
-
-### Unable to run job: unknown resource "mem"
-
-Copy `./bds.config` to `$HOME/.bds/`.
-
-
-### Error trying to find out post-mortem info on task
-
-For fast scheduling clusters including SGE, doing post-mortem on jobs can fail in BDS. Add `clusterPostMortemDisabled = true` to your `~/.bds/bds.config`.
-
-
-### java.lang.OutOfMemoryError: unable to create new native thread
-
-Number of threads created by BDS exceeds limit (`ulimit -a`). BDS created lots of thread per pipeline (more than 20). So if you see any thread related error, check your `ulimit -a` and increase it a bit.
-
-
-### Task disappeared
-
-Check a log of failed tasks with `qacct -j [JOB_ID]` (for SGE). You job can be killed due to resource settings. Increase your walltime or max. memory (`-wt`, `-wt_APPNAME`, `-mem` or `-mem_APPNAME`) for the task of failure.
-
-
-### File exists, No file or directory (related to parallel conda activations)
-
-This is a known bug in conda [#2837](https://github.com/conda/conda/issues/2837) and has not been fixed yet even in the latest version (4.2.1). Downgrade conda to 4.0.5 or 4.0.10. 
-
-```
-Traceback (most recent call last):
-  File "/home/leepc12/miniconda3/bin/conda", line 6, in <module>
-    sys.exit(main())
-  File "/home/leepc12/miniconda3/lib/python3.5/site-packages/conda/cli/main.py", line 48, in main
-    activate.main()
-  File "/home/leepc12/miniconda3/lib/python3.5/site-packages/conda/cli/activate.py", line 135, in main
-    conda.install.symlink_conda(prefix, root_dir, shell)
-  File "/home/leepc12/miniconda3/lib/python3.5/site-packages/conda/install.py", line 596, in symlink_conda
-    symlink_conda_hlp(prefix, root_dir, where, symlink_fn)
-  File "/home/leepc12/miniconda3/lib/python3.5/site-packages/conda/install.py", line 613, in symlink_conda_hlp
-    symlink_fn(root_file, prefix_file)
-FileExistsError: [Errno 17] File exists: '/home/leepc12/miniconda3/bin/conda' -> '/home/leepc12/miniconda3/envs/bds_atac/bin/conda'
-
-Traceback (most recent call last):
-  File "/home/leepc12/miniconda3/bin/conda", line 6, in <module>
-    sys.exit(main())
-  File "/home/leepc12/miniconda3/lib/python3.5/site-packages/conda/cli/main.py", line 48, in main
-    activate.main()
-  File "/home/leepc12/miniconda3/lib/python3.5/site-packages/conda/cli/activate.py", line 135, in main
-    conda.install.symlink_conda(prefix, root_dir, shell)
-  File "/home/leepc12/miniconda3/lib/python3.5/site-packages/conda/install.py", line 596, in symlink_conda
-    symlink_conda_hlp(prefix, root_dir, where, symlink_fn)
-  File "/home/leepc12/miniconda3/lib/python3.5/site-packages/conda/install.py", line 610, in symlink_conda_hlp
-    os.remove(prefix_file)
-FileNotFoundError: [Errno 2] No such file or directory: '/home/leepc12/miniconda3/envs/bds_atac_py3/bin/conda'
-```
-
-### Exception in thread "main" java.lang.NumberFormatException: For input string: "40G"
-
-Do not use `-mem` in your command line. Use '-memory` instead.
-
-```
-$ bds chipseq.bds -mem 40G
-Picked up _JAVA_OPTIONS: -Xms256M -Xmx1024M -XX:ParallelGCThreads=1
-Exception in thread "main" java.lang.NumberFormatException: For input string: "40G"
-        at java.lang.NumberFormatException.forInputString(NumberFormatException.java:65)
-        at java.lang.Long.parseLong(Long.java:589)
-        at java.lang.Long.parseLong(Long.java:631)
-        at org.bds.lang.Type.parse(Type.java:334)
-        at org.bds.BdsParseArgs.parseArgs(BdsParseArgs.java:207)
-        at org.bds.BdsParseArgs.initializeArgs(BdsParseArgs.java:150)
-        at org.bds.BdsParseArgs.initializeArgs(BdsParseArgs.java:106)
-        at org.bds.BdsParseArgs.parse(BdsParseArgs.java:172)
-        at org.bds.Bds.runCompile(Bds.java:872)
-        at org.bds.Bds.run(Bds.java:815)
-        at org.bds.Bds.main(Bds.java:182)
 ```
 
 # Contributors
