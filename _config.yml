@@ -1,7 +1,7 @@
 # Setup
 title:        Genomic pipelines in Kundaje lab
 tagline:      BigDataScript pipelines, libraries and programming guideline
-baseurl:      ""
+Baseurl:      "."
 paginate:     1
 
 # About/contact
