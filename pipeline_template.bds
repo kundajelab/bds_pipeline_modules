@@ -1,0 +1,83 @@
+#!/usr/bin/env bds
+#vim: syntax=java
+
+
+help() // show help contexts
+
+include "modules/input.bds"
+include "modules/align_bwa.bds"
+include "modules/postalign_bam.bds"
+include "modules/postalign_bed.bds"
+include "modules/report.bds"
+
+
+main()
+
+
+void main() { // atac pipeline starts here
+
+	// add label to filetable (to sort items in a filetable)
+
+	add_label_to_table("Fastq")
+	add_label_to_table("Bam")
+	add_label_to_table("Filtered bam")
+	add_label_to_table("Tag-align")
+
+	// add label to graphviz (group, long name)
+
+	group := "align"
+	add_label_to_graph(group, "Mapping and Alignment")
+
+	// read fastq
+
+	fastqs := get_fastqs( rep )
+
+	string fastq = fastqs[0]
+
+	add_file_to_report( fastqs[0], "fastq", group, "Alignment/$long/Fastq" )
+
+	// bwa mapping
+
+	string bam, align_log
+	( bam, align_log ) = bwa_( fastq, out_dir, out_dir, group, nth )
+
+	wait
+
+	add_file_to_report( bam, "bam", group, "Alignment/Bam" )		
+	add_file_to_table( align_log, "QC and logs/BWA map. log")
+
+	// filter/dedup bam
+
+	string filt_bam, dup_qc, flagstat_nodup_dq, pbc_qc
+	( filt_bam, dup_qc, flagstat_nodup_qc, pbc_qc ) = dedup_bam( bam, out_dir, out_dir, group, nth_rep )
+
+	wait
+
+	add_file_to_report( filt_bam, "filt. bam", group, "Alignment/Filtered & deduped bam" )
+	add_file_to_table( dup_qc, "QC and logs/Dedup. log")
+
+	// align to tag-align
+
+	string tag = bam_to_tag( filt_bam_, out_dir, group )
+
+	add_file_to_report( tag, "tag-align", group, "Alignment/$long/Tag-align" )
+
+	wait
+
+	// report
+
+	html := html_pipeline_version( "https://github.com/kundajelab/bds_pipeline_modules/commit" ) // pipeline version info
+	html += html_filetable()        // treeview for directory and file structure
+	html += html_graph()    	// graphviz workflow diagram
+
+        report( html )
+}			
+
+void help() {
+
+	if ( is_cmd_line_arg_empty() ) {
+
+		printHelp()
+		exit
+	}
+}
