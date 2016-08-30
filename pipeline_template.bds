@@ -30,16 +30,16 @@ void main() { // atac pipeline starts here
 
 	// read fastq
 
-	fastqs := get_fastqs( rep )
+	fastqs := get_fastqs( 1 ) // get fastq (-fastq1 in command line arguments) 
 
 	string fastq = fastqs[0]
 
-	add_file_to_report( fastqs[0], "fastq", group, "Alignment/$long/Fastq" )
+	add_file_to_report( fastqs[0], "fastq", group, "Alignment/Fastq" )
 
 	// bwa mapping
 
 	string bam, align_log
-	( bam, align_log ) = bwa_( fastq, out_dir, out_dir, group, nth )
+	( bam, align_log ) = bwa( fastq, out_dir, out_dir, group, nth ) // multi threaded bwa (with $nth threads)
 
 	wait
 
@@ -48,8 +48,8 @@ void main() { // atac pipeline starts here
 
 	// filter/dedup bam
 
-	string filt_bam, dup_qc, flagstat_nodup_dq, pbc_qc
-	( filt_bam, dup_qc, flagstat_nodup_qc, pbc_qc ) = dedup_bam( bam, out_dir, out_dir, group, nth_rep )
+	string filt_bam, dup_qc, flagstat_nodup_qc, pbc_qc
+	( filt_bam, dup_qc, flagstat_nodup_qc, pbc_qc ) = dedup_bam( bam, out_dir, out_dir, group, nth )
 
 	wait
 
@@ -58,9 +58,9 @@ void main() { // atac pipeline starts here
 
 	// align to tag-align
 
-	string tag = bam_to_tag( filt_bam_, out_dir, group )
+	string tag = bam_to_tag( filt_bam, out_dir, group )
 
-	add_file_to_report( tag, "tag-align", group, "Alignment/$long/Tag-align" )
+	add_file_to_report( tag, "tag-align", group, "Alignment/Tag-align" )
 
 	wait
 
