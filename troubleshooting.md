@@ -146,3 +146,16 @@ Exception in thread "main" java.lang.NumberFormatException: For input string: "4
         at org.bds.Bds.main(Bds.java:182)
 ```
 
+### libnet.so: cannot open shared object file: No such file or directory
+
+This error happens when you have activated conda environment of BDS pipelines and pipelines on them.
+```
+Fatal error: /.../bds_atac/modules/base.bds, line 30. /.../miniconda3/envs/bds_atac/jre/lib/amd64/libnio.so: libnet.so: cannot open shared object file: No such file or directory
+```
+
+Solution:
+```
+$ source deactivate
+(and then run pipieline)
+$ bds pipeline.bds ...
+```

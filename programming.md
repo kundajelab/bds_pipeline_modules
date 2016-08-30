@@ -252,10 +252,10 @@ Other non-basic child modules typically include `species.bds` and `report.bds` s
  ├ align_trim_adapters.bds  	# bowtie2 parameters, bowtie2 resource settings, align fastqs to get raw bam
  ├ postalign_bed.bds 		# postalign functions for bed and tagaligns (including cross-corr. analysis)
  ├ callpeak_spp.bds  		# peak calling with spp
- ├ callpeak_macs2.bds  		# peak calling with macs2 (separate macs2 function for chipseq and atac)
- ├ callpeak_naive_overlap.bds  	# peak calling with macs2 (separate macs2 function for chipseq and atac)
- ├ callpeak_etc.bds  		# naive overlap threshold, filtering peak files
- ├ idr.bds  			# IDR and its QC functions
+ ├ callpeak_macs2.bds  		# peak calling with macs2 (macs2 functions for chipseq and atacseq)
+ ├ callpeak_naive_overlap.bds  	# naive overlap on peaks called
+ ├ callpeak_filter.bds  	# filter top peaks from peak files
+ ├ callpeak_idr.bds  		# IDR and its QC functions
  └ signal.bds  			# signal track generation using deepTools (bamCoverage) and Anshul's align2rawsignal.
 
 // the following two modules share align_multimapping.bds for the parameter '-multimapping'
@@ -632,3 +632,45 @@ void callpeak_OKAY() {
 ### Buggy syntax
 
 `goal` and `dep` seem to be buggy (pipeline crashes) when combined with `par` prefix. Stay away from these syntax.
+
+
+## Installer for dependencies
+
+Modify `install_dependencies.sh` for your own pipeline.
+```
+ENV_NAME=your_pipeline_name 		# you also need to modify [default] section in ./default.env
+ENV_NAME_PY3=your_pipeline_name_py3 	# you also need to modify [default] section in ./default.env
+INSTALL_WIGGLER_AND_MCR=0 		# if it's 1, install MCR (Matlab Compiler Runtime), this can take >500MB disk space
+```
+
+## Installer for genome data
+
+Modify `install_genome_data.sh` for your own pipeline.
+```
+SPECIES_FILE_BASENAME=your_pipeline_species.conf 	# species file name that will be put into [default] section in ./default.env
+CONDA_ENV=your_pipeline_name 				# ENV_NAME that you defined in the previous section
+BUILD_BWT2_IDX=1 					# if it's 1, build bowtie2 index
+BUILD_BWA_IDX=0 					# if it's 1, build bwa index
+```
+
+You can add your own genome to the genome data installer.
+```
+...
+elif [ $GENOME == "species_name" ]; then
+
+  CHRSZ= 	# 2-column chrome sizes file
+  REF_FA= 	# reference genome sequence (.fa.gz)
+  SEQ= 		# root dir. for reference genome sequence for each chromosome
+  SEQ_CHR_ARR= 	# example: (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 M X Y) for human. $SEQ/chr$i.fa.gz
+  GENSZ= 	# genome size summing up 2nd columns in $CHRSZ file, or use 'mm' for mouse, 'hs' for human
+  BLACKLIST=  	# blacklist to filter out peaks in IDR
+
+  # data for ATAQC
+  TSS_ENRICH= 	
+  DNASE=
+  PROM=
+  ENH=
+  REG2MAP=
+  ROADMAP_META=
+...
+```
