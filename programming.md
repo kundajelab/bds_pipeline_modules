@@ -637,6 +637,7 @@ void callpeak_OKAY() {
 ## Installer for dependencies
 
 Modify `install_dependencies.sh` for your own pipeline.
+
 ```
 ENV_NAME=your_pipeline_name 		# you also need to modify [default] section in ./default.env
 ENV_NAME_PY3=your_pipeline_name_py3 	# you also need to modify [default] section in ./default.env
@@ -646,6 +647,7 @@ INSTALL_WIGGLER_AND_MCR=0 		# if it's 1, install MCR (Matlab Compiler Runtime), 
 ## Installer for genome data
 
 Modify `install_genome_data.sh` for your own pipeline.
+
 ```
 SPECIES_FILE_BASENAME=your_pipeline_species.conf 	# species file name that will be put into [default] section in ./default.env
 CONDA_ENV=your_pipeline_name 				# ENV_NAME that you defined in the previous section
@@ -654,6 +656,7 @@ BUILD_BWA_IDX=0 					# if it's 1, build bwa index
 ```
 
 You can add your own genome to the genome data installer.
+
 ```
 ...
 elif [ $GENOME == "species_name" ]; then
@@ -665,8 +668,7 @@ elif [ $GENOME == "species_name" ]; then
   GENSZ= 	# genome size summing up 2nd columns in $CHRSZ file, or use 'mm' for mouse, 'hs' for human
   BLACKLIST=  	# blacklist to filter out peaks in IDR
 
-  # data for ATAQC
-  TSS_ENRICH= 	
+  TSS_ENRICH= 	# data for ATAQC
   DNASE=
   PROM=
   ENH=
