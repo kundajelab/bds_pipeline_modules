@@ -4,11 +4,11 @@
 
 help() // show help contexts
 
+include "modules/pipeline_template.bds"
 include "modules/input.bds"
 include "modules/align_bwa.bds"
 include "modules/postalign_bam.bds"
 include "modules/postalign_bed.bds"
-include "modules/report.bds"
 
 
 main()
