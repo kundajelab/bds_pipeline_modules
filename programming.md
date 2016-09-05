@@ -220,56 +220,84 @@ void sum( int i, int j ) {
 ```
 
 
-## Hierarchy of BDS Pipelines
+## Hierarchy of BDS pipelines in Kundaje lab
 
-BDS is not object-oriented so that the hierarchy of modules is implemented by including a parent module in a child module. All variables and functions in a module are global so they can be referred and called in any of the successor modules, so it is important to explicitly leave comments to tell if variables and funciton are global or local. A module is loaded only once for a global scope so variable declaration and function calls in a global scope is called only once when the module is loaded first.
+BDS is not object-oriented such that the hierarchy of modules is implemented by including a parent module in a child module.
+In this hierarchy, each module works very similar to a singleton class in OOP language.
+All variables and functions in a module are global so they can be referred and called in any of the successor modules,
+so it is important to explicitly leave comments to tell if variables and funciton are global or local.
+Typically an underscore (`_`) is prepended for such local variables and functions in their names.
+A module is loaded only once for a global scope so variable declaration and function calls in a global scope is called only once when the module is loaded first.
 
 The hierarchy of basic modules (top to bottom: parent to child) are like the following:
 
 ```
-base.bds 			# basic string/file/math functions
- └ conf.bds 			# varaibles and functions to read command line argument or configuration/environment files
-   ├ general.bds 		# output directory, cluster resource (#threads, memory and walltime) and shell environment settings
-   │ ├ species.bds 		# species definition, species specific parameters and functions to read species files
-   │ ├ report_graphviz.bds 	# automatic graphviz diagram (SVG) generation
-   │ └ report_filetable.bds 	# automatic HTML filetable generation
-   ├ input_fastq.bds 		# parse command line argument or read configuration file to get fastqs (-fastq ...)
-   ├ input_bam.bds 		# parse command line argument or read configuration file to get bams (-bam ...)
-   ├ input_tagalign.bds  	# parse command line argument or read configuration file to get tagaligns (-tag...)
-   ├ input_peak.bds 		# parse command line argument or read configuration file to get peaks (-peak ...)
-   └ align_multimapping.bds 	# multimapping parameter
+string.bds 			# functions for string manipulation
+├ git.bds 			# git info (latest commit, date) to represent pipeline version
+└ sys.bds 			# system, file I/O, shell variables and BDS script paths
+  └ conf.bds 			# functions to read cmd. line arg. or configuration/environment files
+    ├ parallel.bds 		# parallelization (# of threads) and monitoring thread to manage tasks
+    ├ cluster.bds 		# cluster information (kind of a cluster, max. memory, walltime)
+    │ └ env.bds			# shell (env. modules and conda) environment
+    └ output.bds 		# output directory and title, prefix
+      └ filetable.bds 		# HTML filetable
 
-[report_graphviz.bds, report_filetable.bds]
+[env.bds, output.bds]
+ └ graphviz.bds 		# Graphviz diagram (SVG)
+
+[graphviz.bds, filetable.bds]
  └ report.bds 			# HTML report generation, log/qc file parser, WashU browser track generation.
 
+[git.bds, parallel.bds, report.bds]
+ └ pipeline_template.bds 	# general pipeline template (all pipelines should start from including this)
+
+[parallel.bds, report.bds]
+ └ module_template.bds 		# general module template
 ```
 
-Other non-basic child modules typically include `species.bds` and `report.bds` since most modules need species specific parameters and need to generate graphviz diagram and filetable.
+All pipelines (genomic/non-genomic) should include `pipeline_template.bds`.
+The following hierachy is for genomic pipelines and advanced modules for them.
 
 ```
-[species.bds, report.bds]
- ├ align_bwa.bds  		# bwa parameters, bwa resource settings, align fastqs to get raw bam
- ├ align_trim_adapters.bds  	# bowtie2 parameters, bowtie2 resource settings, align fastqs to get raw bam
+conf.bds
+├ species.bds 			# species definition, species specific parameters and functions to read species files
+├ input_fastq.bds 		# parse cmd. line arg. or read config. file to get fastqs (-fastq ...)
+├ input_bam.bds 		# parse cmd. line arg. or read config. file to get bams (-bam ...)
+├ input_tagalign.bds  		# parse cmd. line arg. or read config. file to get tagaligns (-tag...)
+├ input_peak.bds 		# parse cmd. line arg. or read config. file to get peaks (-peak ...)
+├ input_adapter.bds 		# parse cmd. line arg. or read config. file to get adapters (-adapter ...)
+└ align_multimapping.bds 	# multimapping parameter
+
+[input_fastq.bds, input_bam.bds, input_tagalign.bds, input_peak.bds]
+ └ input.bds 			# manages all input genomic file types (exp. replicate and controls) and endedness (SE/PE), 
+
+[module_template.bds, species.bds]
+ ├ align_bwa.bds  		# map fastqs to get raw bam, bwa parameters, resource settings
+ ├ align_trim_adapters.bds  	# map fastqs to get raw bam, bowtie2 parameters, bowtie2 resource settings
  ├ postalign_bed.bds 		# postalign functions for bed and tagaligns (including cross-corr. analysis)
  ├ callpeak_spp.bds  		# peak calling with spp
  ├ callpeak_macs2.bds  		# peak calling with macs2 (macs2 functions for chipseq and atacseq)
  ├ callpeak_naive_overlap.bds  	# naive overlap on peaks called
  ├ callpeak_filter.bds  	# filter top peaks from peak files
- ├ callpeak_idr.bds  		# IDR and its QC functions
+ ├ callpeak_idr.bds  		# IDR and QC functions
  └ signal.bds  			# signal track generation using deepTools (bamCoverage) and Anshul's align2rawsignal.
 
-// the following two modules share align_multimapping.bds for the parameter '-multimapping'
+# the following two modules share align_multimapping.bds for the parameter '-multimapping'
 
-[species.bds, report.bds, align_multimapping.bds]
- ├ align_bowtie2.bds  		// bowtie2 parameters, bowtie2 resource settings, align fastqs to get raw bam
- └ postalign_bam.bds 		// postalign functions for bam (including filtering bam and bam_to_tagalign...)
+[module_template.bds, species.bds, align_multimapping.bds]
+ ├ align_bowtie2.bds  		# bowtie2 parameters, bowtie2 resource settings, align fastqs to get raw bam
+ └ postalign_bam.bds 		# postalign functions for bam (including filtering bam and bam_to_tagalign...)
 ```
+
+`species.bds` include lots of parameters and data file paths (such as bwa, bowtie indices) frequently used in genomic pipelines.
+`input.bds` can read input genomic files (fastq, bam, ...) from command line argument or configuration file.
+Therefore, genomic modules must include `module_template.bds` and `species.bds`, and genomic pipelines must include `pipeline_template.bds` and `input.bds`.
 
 
 ## Module template
 ```
-include "modules/species.bds"
-include "modules/report.bds"
+include "species.bds"
+include "module_template.bds"
 
 // variables globally used in all child modules (typically you want them to be command line parameters)
 globalvar1 := ""	help Data file
@@ -421,6 +449,7 @@ void func3() {
 ## Pipeline template
 
 ```
+include "modules/pipeline.bds"
 include "modules/any_module_you_want_to_include.bds"
 ...
 
