@@ -8,7 +8,7 @@ BigDataScript (BDS) pipelines and modules
 ### BDS pipelines in Kundaje lab
 
 * [AQUAS TF/Histone ChIP-Seq pipeline](https://github.com/kundajelab/TF_chipseq_pipeline)
-* [ATAC-Seq/DNase-Seq pipeline](https://github.com/kundajelab/bds_atac)
+* [ATAC-Seq/DNase-Seq pipeline](https://github.com/kundajelab/atac_dnase_pipelines)
 
 ### Discussion channel for genomic pipelines in Kundaje lab
 
