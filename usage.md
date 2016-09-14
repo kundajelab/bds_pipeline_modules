@@ -119,7 +119,7 @@ umap    = /mnt/data/ENCODE/umap/encodeHg19Male/globalmap_k1tok1000 	# uniq. mapp
 bwa_idx = /mnt/data/annotations/indexes/bwa_indexes/encodeHg19Male/v0.7.10/encodeHg19Male_bwa-0.7.10.fa
 blacklist = /mnt/data/ENCODE/blacklists/wgEncodeDacMapabilityConsensusExcludable.bed.gz
 
-# added for for atac-seq pipeline (bds_atac/atac.bds)
+# added for for atac-seq pipeline (atac_dnase_pipelines/atac.bds)
 bwt2_idx = /mnt/data/annotations/indexes/bowtie2_indexes/bowtie2/ENCODEHg19_male
 
 # added for ATAQC

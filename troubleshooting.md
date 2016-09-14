@@ -63,7 +63,7 @@ $ sudo update-alternatives --config java # choose the latest java as default
 If your pipeline starts from BAM files, make sure that bam index (.bam.bai) exists together with BAM file. If not, build index with `samtools index [YOUR_BAM_FILE]`. BAM and BAI should be in the same directory.
 
 
-### Fatal error: /home/leepc12/bds_atac/modules/report_*.bds
+### Fatal error: /home/leepc12/atac_dnase_pipelines/modules/report_*.bds
 
 Simply re-run the pipeline with the same command. Possible bug in BDS for locking/unlocking global variables.
 
