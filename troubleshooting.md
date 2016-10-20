@@ -11,13 +11,20 @@ If see the following error when you submit jobs to Sun Grid Enginee,
 /bin/bash: module: line 1: syntax error: unexpected end of file
 ```
 
-Check if your $HOME/.bashrc has any errorneous lines.
+Check if your `$HOME/.bashrc` has any errorneous lines.
 
-Remove the following line in you module initialization scripts ($MODULESHOME/init/bash or /etc/profile.d/modules.sh).
+Remove the following line in you module initialization scripts (`$MODULESHOME/init/bash` or `/etc/profile.d/modules.sh`).
 
 ```
 export -f module
 ```
+
+If you don't have super user privileges, add the following to your `$HOME/.bashrc`.
+
+```
+unset module
+```
+
 
 ### Unable to run job: unknown resource "'mem"
 
