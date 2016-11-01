@@ -20,8 +20,7 @@ if [ "$#" -lt 2 ]; then
   echo "Genome data files will be installed on [DATA_DIR]/[GENOME]."
   echo "A species file [DATA_DIR]/${SPECIES_FILE_BASENAME} will be generated and added to default.conf."
   echo
-  #echo "Supported genomes: hg19, mm9, hg38 (BETA), mm10 (BETA) and macam7 (BETA)"
-  echo "Supported genomes: hg19, mm9, hg38 (BETA), mm10 (BETA)"
+  echo "Supported genomes: hg19, mm9, hg38 (BETA), mm10 (BETA), hg38_ENCODE (BETA), mm10_ENCODE (BETA)"
   echo
   echo "Usage: ./install_genome_data.sh [GENOME] [DATA_DIR]"
   echo "  Example: ./install_genome_data.sh hg19 $TMP/genome_data"
@@ -87,6 +86,16 @@ elif [ $GENOME == "mm9" ]; then
   ENH="http://mitra.stanford.edu/kundaje/genome_data/mm9/ataqc/mm9_dhs_enh_ucsc_v1.bed.gz"
   REG2MAP="http://mitra.stanford.edu/kundaje/genome_data/mm9/ataqc/dnase_avgs_merged_named.fseq.vals.gz"
   ROADMAP_META="http://mitra.stanford.edu/kundaje/genome_data/mm9/ataqc/accession_to_name.txt"
+
+elif [ $GENOME == "hg38" ]; then
+
+  REF_FA="ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_23/GRCh38.p3.genome.fa.gz"
+  BLACKLIST="http://mitra.stanford.edu/kundaje/genome_data/hg38/hg38.blacklist.bed.gz"
+
+elif [ $GENOME == "mm10" ]; then
+
+  REF_FA="ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_mouse/release_M10/GRCm38.p4.genome.fa.gz"
+  BLACKLIST="http://mitra.stanford.edu/kundaje/genome_data/mm10/mm10.blacklist.bed.gz"
 
 elif [ $GENOME == "hg38" ]; then
 
