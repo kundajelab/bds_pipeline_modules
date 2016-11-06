@@ -3,6 +3,19 @@ layout: default
 title: {{ site.name }}
 ---
 
+### Cannot find important executables like `bds`, `conda`, `bds_scr` (because $HOME/.bashrc is not loaded)
+
+Add the following lines to your `$HOME/.profile`. If it doesn't exists create a new one.
+
+```
+if [ -n "$BASH_VERSION" ]; then
+    # include .bashrc if it exists
+    if [ -f "$HOME/.bashrc" ]; then
+        . "$HOME/.bashrc"
+    fi
+fi
+```
+
 ### /bin/bash: module: line 1: syntax error: unexpected end of file
 
 If see the following error when you submit jobs to Sun Grid Enginee,
