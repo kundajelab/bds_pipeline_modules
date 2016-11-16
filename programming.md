@@ -733,12 +733,9 @@ if [[ $GENOME == "hg19" || $GENOME == "mm9" || $GENOME == "species_name" ]]; the
 ...
 elif [ $GENOME == "species_name" ]; then
 
-  CHRSZ= 	# 2-column chrome sizes file
   REF_FA= 	# reference genome sequence (.fa.gz)
-  SEQ= 		# root dir. for reference genome sequence for each chromosome
-  SEQ_CHR_ARR= 	# example: (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 M X Y) for human. $SEQ/chr$i.fa.gz
-  GENSZ= 	# genome size summing up 2nd columns in $CHRSZ file, or use 'mm' for mouse, 'hs' for human
   BLACKLIST=  	# blacklist to filter out peaks in IDR
+  UMAP=		# unique mappability tracks https://personal.broadinstitute.org/anshul/projects/umap
 
   TSS_ENRICH= 	# data for ATAQC
   DNASE=
