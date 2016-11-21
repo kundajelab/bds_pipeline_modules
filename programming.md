@@ -722,7 +722,7 @@ BUILD_BWT2_IDX=1 					# if it's 1, build bowtie2 index
 BUILD_BWA_IDX=0 					# if it's 1, build bwa index
 ```
 
-You can add your own genome to the genome data installer.
+You can add your own genome to the genome data installer. Bowtie2/Bwa indices will be built based on `$REF_FA`.
 
 ```
 ...
@@ -736,6 +736,7 @@ elif [ $GENOME == "species_name" ]; then
   REF_FA= 	# reference genome sequence (.fa.gz)
   BLACKLIST=  	# blacklist to filter out peaks in IDR
   UMAP=		# unique mappability tracks https://personal.broadinstitute.org/anshul/projects/umap
+  SPECIES_BROWSER=    # specify species name if it does not match with that in WashU browser (e.g. hg38 for hg38_ENCODE)
 
   TSS_ENRICH= 	# data for ATAQC
   DNASE=
