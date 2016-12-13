@@ -179,3 +179,16 @@ $ source deactivate
 (and then run pipieline)
 $ bds pipeline.bds ...
 ```
+
+### conda install prevents modules from loading
+
+After Miniconda is installed, the change it makes to the path prevents the loading of modules. Example error:
+```
+$ module load jre/1.8.0-77
+    jre/1.8.0-77(69):ERROR:102: Tcl command execution failed: the-magick::parse_me
+```
+Changing the PATH line in `~/.bashrc` to `export PATH="$PATH:/home/USERID/miniconda3/bin" (appending instead of prepending) seems to fix the problem.
+
+### Error: ERROR: placeholder [CONDA_ENV_PATH] too short in: glib-2.43.0-2
+
+See solution in issue [#8](https://github.com/kundajelab/chipseq_pipeline/issues/8)
