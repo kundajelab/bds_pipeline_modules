@@ -713,7 +713,7 @@ INSTALL_WIGGLER_AND_MCR=0 		# if it's 1, install MCR (Matlab Compiler Runtime), 
 
 ## Installer for genome data
 
-Customize `install_genome_data.sh` for your own pipeline.
+Step 1) Customize `install_genome_data.sh` for your own pipeline. If you modify existing pipelines (`chipseq_pipeline` or `atac_dnase_pipeline`) Skip this step.
 
 ```
 SPECIES_FILE_BASENAME=your_pipeline_species.conf 	# species file name that will be put into [default] section in ./default.env
@@ -722,23 +722,25 @@ BUILD_BWT2_IDX=1 					# if it's 1, build bowtie2 index
 BUILD_BWA_IDX=0 					# if it's 1, build bwa index
 ```
 
-You can add your own genome to the genome data installer. Bowtie2/Bwa indices will be built based on `$REF_FA`.
+Step 2) You can add any genome to the genome data installer. Bowtie2/Bwa indices will be built based on `$REF_FA`.
+Minimum requirement for the genome database is URL for `$REF_FA`. Please leave others blank if you don't have them.
 
 ```
 ...
-if [[ $GENOME == "hg19" || $GENOME == "mm9" || $GENOME == "species_name" ]]; then
+if [[ $GENOME == "hg19" || $GENOME == "mm9" || $GENOME == "hg38" || $GENOME == "mm10" || $GENOME == "hg38_ENCODE" || $GENOME == "mm10_ENCODE" || $GENOME == "species_name" ]]; then
   echo
 ...
 
 ...
 elif [ $GENOME == "species_name" ]; then
 
-  REF_FA= 	# reference genome sequence (.fa.gz)
-  BLACKLIST=  	# blacklist to filter out peaks in IDR
-  UMAP=		# unique mappability tracks https://personal.broadinstitute.org/anshul/projects/umap
+  REF_FA= # reference genome sequence (.fa.gz or .fa)  
+  BLACKLIST= # blacklist to filter out peaks in IDR
   SPECIES_BROWSER=    # specify species name if it does not match with that in WashU browser (e.g. hg38 for hg38_ENCODE)
+  UMAP= # unique mappability tracks https://personal.broadinstitute.org/anshul/projects/umap
 
-  TSS_ENRICH= 	# data for ATAQC
+  # data for ATAQC
+  TSS_ENRICH=
   DNASE=
   PROM=
   ENH=
