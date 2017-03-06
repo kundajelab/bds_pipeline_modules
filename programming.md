@@ -724,17 +724,13 @@ BUILD_BWA_IDX=0 					# if it's 1, build bwa index
 
 Step 2) You can add any genome to the genome data installer. Bowtie2/Bwa indices will be built based on `$REF_FA`.
 Minimum requirement for the genome database is URL for `$REF_FA`. Please leave others blank if you don't have them.
+`$REF_FA` can take `.fa.gz`, `.fa`, `fa.bz2` or `.2bit`.
 
+Add the following to the end of the first `if` shell statement.
 ```
-...
-if [[ $GENOME == "hg19" || $GENOME == "mm9" || $GENOME == "hg38" || $GENOME == "mm10" || $GENOME == "hg38_ENCODE" || $GENOME == "mm10_ENCODE" || $GENOME == "species_name" ]]; then
-  echo
-...
-
-...
 elif [ $GENOME == "species_name" ]; then
 
-  REF_FA= # reference genome sequence (.fa.gz or .fa)  
+  REF_FA= # reference genome sequence (.fa.gz, .fa, fa.bz2 or .2bit)
   BLACKLIST= # blacklist to filter out peaks in IDR
   SPECIES_BROWSER=    # specify species name if it does not match with that in WashU browser (e.g. hg38 for hg38_ENCODE)
   UMAP= # unique mappability tracks https://personal.broadinstitute.org/anshul/projects/umap
@@ -746,5 +742,7 @@ elif [ $GENOME == "species_name" ]; then
   ENH=
   REG2MAP=
   ROADMAP_META=
+
+fi
 ...
 ```
